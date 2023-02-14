@@ -7,7 +7,10 @@
 		{
 			"Name": "Peripheral",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine"
+			]
 		}
 	],
 	"Plugins": [
@@ -21,14 +24,6 @@
 		{
 			"Name": "OSC",
 			"Enabled": true
-		},
-		{
-			"Name": "SteamVR",
-			"Enabled": true,
-			"SupportedTargetPlatforms": [
-				"Win64",
-				"Linux"
-			]
 		},
 		{
 			"Name": "OpenXR",
@@ -45,6 +40,16 @@
 			"Enabled": true,
 			"SupportedTargetPlatforms": [
 				"Win64",
+				"Android"
+			]
+		},
+		{
+			"Name": "OpenXRHandTracking",
+			"Enabled": true,
+			"SupportedTargetPlatforms": [
+				"Win64",
+				"Linux",
+				"HoloLens",
 				"Android"
 			]
 		}
