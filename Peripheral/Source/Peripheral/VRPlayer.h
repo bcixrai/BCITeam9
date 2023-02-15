@@ -52,14 +52,10 @@ public:
 	//Grabbing stuff
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float mGrabRadius = 200.f;
-	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
-		void GripRightHand_Pressed();
-	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
-		void GripRightHand_Released();
-	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
-		void GripLeftHand_Pressed();
-	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
-		void GripLeftHand_Released();
+	void GripRightHand_Pressed();
+	void GripRightHand_Released();
+	void GripLeftHand_Pressed();
+	void GripLeftHand_Released();
 
 	class UGrabComponent* GetNearestGrabComponent(UMotionControllerComponent* mc);
 	std::vector<UGrabComponent*> GetNearbyGrabComponents(UMotionControllerComponent* mc);
@@ -68,10 +64,20 @@ public:
 	UGrabComponent* GetGrabbed(UMotionControllerComponent* mc);
 	//Is the mc parameter currently holding an item
 	bool GrabbingItem(UMotionControllerComponent* mc);
+
+	//Teleporting
+	void TeleportAxis(float axis);
+	void StartTeleport();
+	void ExecuteTeleport();
+	void StopTeleport();
+
+	bool IsValidTeleportLocation(FHitResult hit);
 private:
 	bool bUseBCI = false;
 
 
 	bool bVR = false;
 
+
+	
 };

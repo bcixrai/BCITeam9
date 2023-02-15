@@ -6,21 +6,14 @@
 #include "MotionControllerComponent.h"
 #include "GrabComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "NavigationSystem.h"
+
+
 // Sets default values
 AVRPlayer::AVRPlayer()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	//Right hand
-	mRightMC = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("MC Right"));
-	mRightMC->bEditableWhenInherited = true;
-	mRightMC->MotionSource = "Right";
-
-	//Left hand
-	mLeftMC = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("MC Left"));
-	mLeftMC->bEditableWhenInherited = true;
-	mLeftMC->MotionSource = "Left";
 
 }
 
@@ -30,6 +23,17 @@ void AVRPlayer::BeginPlay()
 	Super::BeginPlay();
 	
 	//What do we want to do different here
+
+	//Get refrences to hands
+	auto comps = GetComponents();
+	for (auto comp : comps) {
+		if (comp->GetName() == "RightMC") {
+			mRightMC = Cast<UMotionControllerComponent>(comp);
+		}
+		if (comp->GetName() == "LeftMC") {
+			mLeftMC = Cast<UMotionControllerComponent>(comp);
+		}
+	}
 }
 
 // Called every frame
@@ -45,10 +49,12 @@ void AVRPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	InputComponent->BindAction("GrabRight", IE_Pressed, this, &AVRPlayer::GripRightHand_Pressed);
-	InputComponent->BindAction("GrabRight", IE_Released, this, &AVRPlayer::GripLeftHand_Released);
+	InputComponent->BindAction("GrabRight", IE_Released, this, &AVRPlayer::GripRightHand_Released);
 
 	InputComponent->BindAction("GrabLeft", IE_Pressed, this,   &AVRPlayer::GripLeftHand_Pressed);
 	InputComponent->BindAction("GrabLeft", IE_Released, this,  &AVRPlayer::GripLeftHand_Released);
+
+	InputComponent->BindAxis("Teleport", this, &AVRPlayer::TeleportAxis);
 }
 
 
@@ -161,6 +167,9 @@ std::vector<UGrabComponent*> AVRPlayer::GetNearbyGrabComponents(UMotionControlle
 	bool bHasHit = UKismetSystemLibrary::SphereTraceMultiForObjects(GetWorld(), mc->GetComponentLocation(), mc->GetComponentLocation(), 500.f,
 		ObjectTypesArray, true, ignored, EDrawDebugTrace::ForDuration, hits, true);
 
+	FCollisionShape col = FCollisionShape::MakeSphere(mGrabRadius);
+	FVector loc = mc->GetComponentLocation();
+	bool isHit = GetWorld()->SweepMultiByChannel(hits, loc, loc, FQuat::Identity, ECC_PhysicsBody, col);
 	std::vector<UGrabComponent*> grabs;
 	for (auto& hit : hits) {
 		auto actor = hit.GetActor();
@@ -191,6 +200,33 @@ bool AVRPlayer::GrabbingItem(UMotionControllerComponent* mc)
 	else {
 		return false;
 	}
+}
+#pragma endregion
+
+#pragma region Teleportation
+void AVRPlayer::TeleportAxis(float axis)
+{
+	GEngine->AddOnScreenDebugMessage(1, 3, FColor::Cyan, FString::Printf(TEXT("Teleprot axis : %f"), axis));
+}
+
+void AVRPlayer::StartTeleport()
+{
+}
+
+void AVRPlayer::ExecuteTeleport()
+{
+}
+
+void AVRPlayer::StopTeleport()
+{
+}
+
+bool AVRPlayer::IsValidTeleportLocation(FHitResult hit)
+{
+	FNavLocation OutLocation;
+	UNavigationSystemV1* NavSystem = Cast<UNavigationSystemV1>(GetWorld()->GetNavigationSystem());
+	//bHitNav = NavSystem->ProjectPointToNavigation(hit.Location,OutLocation, );
+	return true;
 }
 
 #pragma endregion
