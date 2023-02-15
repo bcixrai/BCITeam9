@@ -15,6 +15,7 @@ AVRPlayer::AVRPlayer()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	mTeleportGraphic = CreateDefaultSubobject<USceneComponent>(TEXT("TeleportGraphic"));
 }
 
 // Called when the game starts or when spawned
@@ -23,7 +24,7 @@ void AVRPlayer::BeginPlay()
 	Super::BeginPlay();
 	
 	//What do we want to do different here
-
+	StopTeleport();
 	//Get refrences to hands
 	auto comps = GetComponents();
 	for (auto comp : comps) {
@@ -41,6 +42,23 @@ void AVRPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (bTeleporting) {
+		auto hit = GetTeleportAimHit();
+		if (hit.GetActor()) {
+			mTeleportLocation = GetTeleportAimHit().Location;
+		}
+		mTeleportGraphic->SetWorldLocation(hit.Location);
+
+		//Change colors baed on if its legal or not
+		bool legal = IsValidTeleportLocation(hit);
+		if (legal) {
+			GEngine->AddOnScreenDebugMessage(10, 1, FColor::Green, FString::Printf(TEXT("Teleport")));
+		}
+		else {
+
+			GEngine->AddOnScreenDebugMessage(10, 1, FColor::Red, FString::Printf(TEXT("Teleport")));
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -54,7 +72,8 @@ void AVRPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	InputComponent->BindAction("GrabLeft", IE_Pressed, this,   &AVRPlayer::GripLeftHand_Pressed);
 	InputComponent->BindAction("GrabLeft", IE_Released, this,  &AVRPlayer::GripLeftHand_Released);
 
-	InputComponent->BindAxis("Teleport", this, &AVRPlayer::TeleportAxis);
+	InputComponent->BindAction("Teleport", IE_Pressed, this, &AVRPlayer::Teleport_Pressed);
+	InputComponent->BindAction("Teleport", IE_Pressed, this, &AVRPlayer::Teleport_Released);
 }
 
 
@@ -83,11 +102,22 @@ void AVRPlayer::GripRightHand_Pressed()
 	if (!grab) {
 		return;
 	}
+
+
+	if (mGrabs[mLeftMC] == grab) {
+		if (!mGrabs[mLeftMC]->TryRelease()) {
+			//Some error 
+			GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf("Right hand has grabbed an item which wont release from the left %f", 5));
+			return;
+		}
+	}
+
 	bool grabbed = grab->TryGrab(mRightMC);
 	if (!grabbed) {
 		return;
 	}
 	mGrabs[mRightMC] = grab;
+
 }
 void AVRPlayer::GripRightHand_Released()
 {
@@ -110,6 +140,14 @@ void AVRPlayer::GripLeftHand_Pressed()
 	auto grab = GetNearestGrabComponent(mLeftMC);
 	if (!grab) {
 		return;
+	}
+
+	if (mGrabs[mRightMC] == grab) {
+		if (!mGrabs[mRightMC]->TryRelease()) {
+			//Some error 
+			GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf("Right hand wont release the component %f", 5));
+			return;
+		}
 	}
 	bool grabbed = grab->TryGrab(mLeftMC);
 	if (!grabbed) {
@@ -204,29 +242,70 @@ bool AVRPlayer::GrabbingItem(UMotionControllerComponent* mc)
 #pragma endregion
 
 #pragma region Teleportation
-void AVRPlayer::TeleportAxis(float axis)
+void AVRPlayer::Teleport_Pressed()
 {
-	GEngine->AddOnScreenDebugMessage(1, 3, FColor::Cyan, FString::Printf(TEXT("Teleprot axis : %f"), axis));
+	bTeleporting = true;
+
+	mTeleportGraphic->SetHiddenInGame(false);
 }
 
-void AVRPlayer::StartTeleport()
+void AVRPlayer::Teleport_Released()
 {
+	bTeleporting = false;
+
+	bool canTeleport = TryTeleport();
+	if (!canTeleport) {
+		return;
+	}
+
+	SetActorLocation(mTeleportLocation);
+
+
+	mTeleportGraphic->SetHiddenInGame(true);
 }
 
-void AVRPlayer::ExecuteTeleport()
+bool AVRPlayer::TryTeleport()
 {
-}
+	//Find where we are aiming from
 
-void AVRPlayer::StopTeleport()
-{
+	
+	if (!Hit.GetActor()) {
+		return false;
+	}
+
+
+	if (IsValidTeleportLocation(Hit)) {
+		mTeleportLocation = Hit.Location;
+		return true;
+	}
 }
 
 bool AVRPlayer::IsValidTeleportLocation(FHitResult hit)
 {
 	FNavLocation OutLocation;
 	UNavigationSystemV1* NavSystem = Cast<UNavigationSystemV1>(GetWorld()->GetNavigationSystem());
-	//bHitNav = NavSystem->ProjectPointToNavigation(hit.Location,OutLocation, );
+	auto bHitNav = NavSystem->ProjectPointToNavigation(hit.Location,OutLocation);
 	return true;
+}
+
+void AVRPlayer::TeleportGraphic()
+{
+
+}
+
+FHitResult AVRPlayer::GetTeleportAimHit()
+{
+	//Cast ray from aim start
+	auto rayStart = mTeleportAimStart->GetComponentLocation();
+	auto forw = mTeleportAimStart->GetForwardVector();
+	FVector rayEnd = rayStart + forw * mTeleportMaxRange;
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	FHitResult Hit;
+	GetWorld()->LineTraceSingleByObjectType(Hit, rayStart, rayEnd, ECC_WorldDynamic, QueryParams); // simple trace function
+	return Hit;
 }
 
 #pragma endregion

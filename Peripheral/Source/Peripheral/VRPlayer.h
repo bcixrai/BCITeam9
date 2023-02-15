@@ -66,18 +66,26 @@ public:
 	bool GrabbingItem(UMotionControllerComponent* mc);
 
 	//Teleporting
-	void TeleportAxis(float axis);
-	void StartTeleport();
-	void ExecuteTeleport();
-	void StopTeleport();
-
+	void Teleport_Pressed();
+	void Teleport_Released();
+	bool TryTeleport();
 	bool IsValidTeleportLocation(FHitResult hit);
+	void TeleportGraphic();
+
+	FHitResult GetTeleportAimHit();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		USceneComponent* mTeleportGraphic;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		USceneComponent* mTeleportAimStart;
 private:
 	bool bUseBCI = false;
 
 
 	bool bVR = false;
 
+	bool bTeleporting = false;
+	float mTeleportMaxRange = 1000.f;
 
-	
+
+	FVector mTeleportLocation;
 };
