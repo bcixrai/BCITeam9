@@ -16,6 +16,8 @@ AVRPlayer::AVRPlayer()
 	PrimaryActorTick.bCanEverTick = true;
 
 	mTeleportGraphic = CreateDefaultSubobject<USceneComponent>(TEXT("TeleportGraphic"));
+	mTeleportAimStart = CreateDefaultSubobject<USceneComponent>(TEXT("TeleportAimStart"));
+	mTeleportAimStart->SetupAttachment(mRightMC);
 }
 
 // Called when the game starts or when spawned
@@ -24,7 +26,7 @@ void AVRPlayer::BeginPlay()
 	Super::BeginPlay();
 	
 	//What do we want to do different here
-	StopTeleport();
+	Teleport_Released();
 	//Get refrences to hands
 	auto comps = GetComponents();
 	for (auto comp : comps) {
@@ -33,6 +35,15 @@ void AVRPlayer::BeginPlay()
 		}
 		if (comp->GetName() == "LeftMC") {
 			mLeftMC = Cast<UMotionControllerComponent>(comp);
+		}
+	}
+	TArray<USceneComponent*> scens;
+	mTeleportGraphic->GetChildrenComponents(false, scens);
+
+	for (auto comp : scens) {
+		auto mesh = Cast<UStaticMeshComponent>(comp);
+		if (mesh) {
+			mTeleportAimMesh = mesh;
 		}
 	}
 }
@@ -53,9 +64,10 @@ void AVRPlayer::Tick(float DeltaTime)
 		bool legal = IsValidTeleportLocation(hit);
 		if (legal) {
 			GEngine->AddOnScreenDebugMessage(10, 1, FColor::Green, FString::Printf(TEXT("Teleport")));
+			mTeleportAimMesh->SetMaterial(0, mCanTeleportMat);
 		}
 		else {
-
+			mTeleportAimMesh->SetMaterial(0, mCantTeleportMat);
 			GEngine->AddOnScreenDebugMessage(10, 1, FColor::Red, FString::Printf(TEXT("Teleport")));
 		}
 	}
@@ -107,7 +119,7 @@ void AVRPlayer::GripRightHand_Pressed()
 	if (mGrabs[mLeftMC] == grab) {
 		if (!mGrabs[mLeftMC]->TryRelease()) {
 			//Some error 
-			GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf("Right hand has grabbed an item which wont release from the left %f", 5));
+			GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("Right hand has grabbed an item which wont release from the left %f"), 5));
 			return;
 		}
 	}
@@ -145,7 +157,7 @@ void AVRPlayer::GripLeftHand_Pressed()
 	if (mGrabs[mRightMC] == grab) {
 		if (!mGrabs[mRightMC]->TryRelease()) {
 			//Some error 
-			GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf("Right hand wont release the component %f", 5));
+			GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("Right hand wont release the component %f"), 5));
 			return;
 		}
 	}
@@ -268,7 +280,7 @@ bool AVRPlayer::TryTeleport()
 {
 	//Find where we are aiming from
 
-	
+	auto Hit = GetTeleportAimHit();
 	if (!Hit.GetActor()) {
 		return false;
 	}
@@ -278,6 +290,8 @@ bool AVRPlayer::TryTeleport()
 		mTeleportLocation = Hit.Location;
 		return true;
 	}
+
+	return false;
 }
 
 bool AVRPlayer::IsValidTeleportLocation(FHitResult hit)
@@ -286,11 +300,6 @@ bool AVRPlayer::IsValidTeleportLocation(FHitResult hit)
 	UNavigationSystemV1* NavSystem = Cast<UNavigationSystemV1>(GetWorld()->GetNavigationSystem());
 	auto bHitNav = NavSystem->ProjectPointToNavigation(hit.Location,OutLocation);
 	return true;
-}
-
-void AVRPlayer::TeleportGraphic()
-{
-
 }
 
 FHitResult AVRPlayer::GetTeleportAimHit()

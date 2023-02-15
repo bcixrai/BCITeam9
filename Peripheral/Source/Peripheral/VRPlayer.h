@@ -70,13 +70,17 @@ public:
 	void Teleport_Released();
 	bool TryTeleport();
 	bool IsValidTeleportLocation(FHitResult hit);
-	void TeleportGraphic();
 
 	FHitResult GetTeleportAimHit();
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		USceneComponent* mTeleportGraphic;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		USceneComponent* mTeleportAimStart;
+	class UStaticMeshComponent* mTeleportAimMesh;
+	UPROPERTY(EditAnywhere)
+		class UMaterial* mCanTeleportMat;
+	UPROPERTY(EditAnywhere)
+		class UMaterial* mCantTeleportMat;
 private:
 	bool bUseBCI = false;
 
