@@ -13,6 +13,7 @@ class PERIPHERAL_API AVRPlayer : public ACharacter
 
 public:
 	// Sets default values for this character's properties
+	//This VRPlayer should be able to be used for both VR and non-VR
 	AVRPlayer();
 
 protected:
@@ -26,13 +27,51 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	
+	//Hands
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UMotionControllerComponent* mRightMC;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UMotionControllerComponent* mLeftMC;
+
+	//Simple VR mode mechanic
+	bool IsVR() {
+		return bVR;
+	};
+	bool StartVR();
+	bool StopVR();
+
+	//Simple BCI mode mechanic
+	bool UsingBCI() {
+		return bUseBCI;
+	}
+	void SetUseBCI(bool bci) {
+		bUseBCI = bci;
+	}
+
 	//Grabbing stuff
-	UFUNCTION(BlueprintNativeEvent, Category = "Input")
-		void GripLeftHand_Pressed();
-	UFUNCTION(BlueprintNativeEvent, Category = "Input")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float mGrabRadius = 200.f;
+	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
 		void GripRightHand_Pressed();
-	UFUNCTION(BlueprintNativeEvent, Category = "Input")
-		void GripLeftHand_Released();
-	UFUNCTION(BlueprintNativeEvent, Category = "Input")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
 		void GripRightHand_Released();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
+		void GripLeftHand_Pressed();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Input")
+		void GripLeftHand_Released();
+
+	class UGrabComponent* GetNearestGrabComponent(UMotionControllerComponent* mc);
+	std::vector<UGrabComponent*> GetNearbyGrabComponents(UMotionControllerComponent* mc);
+	
+	std::unordered_map<UMotionControllerComponent*, UGrabComponent*> mGrabs;
+	UGrabComponent* GetGrabbed(UMotionControllerComponent* mc);
+	//Is the mc parameter currently holding an item
+	bool GrabbingItem(UMotionControllerComponent* mc);
+private:
+	bool bUseBCI = false;
+
+
+	bool bVR = false;
+
 };
