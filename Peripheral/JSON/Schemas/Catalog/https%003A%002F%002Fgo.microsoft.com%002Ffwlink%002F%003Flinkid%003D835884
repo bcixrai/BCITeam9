@@ -383,6 +383,12 @@
       "url": "https://raw.githubusercontent.com/microsoft/azure-pipelines-vscode/master/service-schema.json"
     },
     {
+      "name": "FasterCI Configuration",
+      "description": "FasterCI repository configuration file",
+      "fileMatch": ["**/.fasterci/config.yaml"],
+      "url": "https://fasterci.com/config.schema.json"
+    },
+    {
       "name": "Foxx Manifest",
       "description": "ArangoDB Foxx service manifest file",
       "fileMatch": ["manifest.json"],
@@ -729,6 +735,15 @@
       }
     },
     {
+      "name": "Cog config file",
+      "description": "Schema for cog.yaml files",
+      "fileMatch": ["cog.yaml", "cog.yml"],
+      "url": "https://raw.githubusercontent.com/replicate/cog/main/pkg/config/data/config_schema_v1.0.json",
+      "versions": {
+        "1.0": "https://raw.githubusercontent.com/replicate/cog/main/pkg/config/data/config_schema_v1.0.json"
+      }
+    },
+    {
       "name": "Commandbox Box.json",
       "description": "Box.json Schema used with Commandbox cli, cfml web servers and modules.",
       "url": "https://raw.githubusercontent.com/Ortus-Solutions/vscode-commandbox/master/resources/schemas/box.schema.json"
@@ -839,6 +854,12 @@
       "description": "The Chart.lock file locks dependencies from Chart.yaml",
       "fileMatch": ["Chart.lock"],
       "url": "https://json.schemastore.org/chart-lock.json"
+    },
+    {
+      "name": "Helm Unittest Test Suite",
+      "description": "A Helm Unittest Test Suite file",
+      "fileMatch": ["**/charts/*/tests/*.yaml"],
+      "url": "https://raw.githubusercontent.com/helm-unittest/helm-unittest/v0.3.0/schema/helm-testsuite.json"
     },
     {
       "name": "CircleCI config.yml",
@@ -2413,6 +2434,12 @@
       "url": "https://json.schemastore.org/openfin.json"
     },
     {
+      "name": "OpenRewrite Resource",
+      "description": "JSON schema for OpenRewrite resource descriptors",
+      "fileMatch": ["**/META-INF/rewrite/*.yml"],
+      "url": "https://raw.githubusercontent.com/openrewrite/rewrite/main/rewrite-core/openrewrite.json"
+    },
+    {
       "name": "Outblocks project configuration",
       "description": "JSON schema for Outblocks project configuration files",
       "fileMatch": ["project.outblocks.yaml", "project.outblocks.yml"],
@@ -3158,6 +3185,12 @@
       "description": "SideWaffle template source schema",
       "fileMatch": ["templatesources.json"],
       "url": "https://json.schemastore.org/templatesources.json"
+    },
+    {
+      "name": "Tier.run pricing.json",
+      "description": "Tier.run pricing model configuration",
+      "fileMatch": ["pricing.json"],
+      "url": "https://raw.githubusercontent.com/tierrun/tier/main/pricing/schema.json"
     },
     {
       "name": "Tikibase",
