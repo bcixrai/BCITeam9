@@ -3,3 +3,10 @@
 
 #include "PeripheralGameModeBase.h"
 
+APeripheralGameModeBase::APeripheralGameModeBase()
+{
+	//auto per = Cast<UPeripheralGameInstance>(GetGameInstance());
+	//if (per) {
+	//	mPeripheralGI = per;
+	//}
+}

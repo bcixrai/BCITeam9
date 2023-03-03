@@ -53,7 +53,7 @@
     },
     {
       "name": ".aiproj.json",
-      "description": "Settings for project analysis by the application inspector",
+      "description": "Settings for project analysis by the Application Inspector",
       "fileMatch": [".aiproj.json"],
       "url": "https://json.schemastore.org/aiproj-1.1.json",
       "versions": {
@@ -163,6 +163,12 @@
         "**/playbooks/*.yml",
         "**/playbooks/*.yaml"
       ]
+    },
+    {
+      "name": "Ansible Rulebook",
+      "description": "Ansible rulebook files",
+      "url": "https://raw.githubusercontent.com/ansible/ansible-rulebook/main/ansible_rulebook/schema/ruleset_schema.json",
+      "fileMatch": ["**/rulebooks/*.yml", "**/rulebooks/*.yaml"]
     },
     {
       "name": "Ansible Inventory",
@@ -420,7 +426,23 @@
       "name": "Freifunk.de Community API",
       "description": "Schema for Freifunk.de Community API. See more details https://github.com/freifunk/directory.api.freifunk.net",
       "fileMatch": ["*.freifunk-api.json"],
-      "url": "https://raw.githubusercontent.com/freifunk/api.freifunk.net/master/specs/0.1.json"
+      "url": "https://raw.githubusercontent.com/freifunk/api.freifunk.net/master/specs/0.5.2.json",
+      "versions": {
+        "0.1": "https://raw.githubusercontent.com/freifunk/api.freifunk.net/master/specs/0.1.json",
+        "0.2.0": "https://raw.githubusercontent.com/freifunk/api.freifunk.net/master/specs/0.2.0.json",
+        "0.4.9": "https://raw.githubusercontent.com/freifunk/api.freifunk.net/master/specs/0.4.9.json",
+        "0.4.10": "https://raw.githubusercontent.com/freifunk/api.freifunk.net/master/specs/0.4.10.json",
+        "0.4.11": "https://raw.githubusercontent.com/freifunk/api.freifunk.net/master/specs/0.4.11.json",
+        "0.4.12": "https://raw.githubusercontent.com/freifunk/api.freifunk.net/master/specs/0.4.12.json",
+        "0.4.13": "https://raw.githubusercontent.com/freifunk/api.freifunk.net/master/specs/0.4.13.json",
+        "0.4.14": "https://raw.githubusercontent.com/freifunk/api.freifunk.net/master/specs/0.4.14.json",
+        "0.4.15": "https://raw.githubusercontent.com/freifunk/api.freifunk.net/master/specs/0.4.15.json",
+        "0.4.16": "https://raw.githubusercontent.com/freifunk/api.freifunk.net/master/specs/0.4.16.json",
+        "0.5.0": "https://raw.githubusercontent.com/freifunk/api.freifunk.net/master/specs/0.5.0.json",
+        "0.5.1": "https://raw.githubusercontent.com/freifunk/api.freifunk.net/master/specs/0.5.1.json",
+        "0.5.2": "https://raw.githubusercontent.com/freifunk/api.freifunk.net/master/specs/0.5.2.json",
+        "development": "https://raw.githubusercontent.com/freifunk/api.freifunk.net/master/specs/development.json"
+      }
     },
     {
       "name": "Frogbot Config",
@@ -2019,6 +2041,15 @@
       "description": "Schema for Ory Keto configuration file",
       "fileMatch": ["keto.json", "keto.yml", "keto.yaml", "keto.toml"],
       "url": "https://raw.githubusercontent.com/ory/keto/master/.schema/version.schema.json"
+    },
+    {
+      "name": "kontinuous-values.yaml",
+      "description": "Schema for Kontinuous values.yaml configuration files",
+      "fileMatch": [
+        "**/.kontinuous/values.yaml",
+        "**/.kontinuous/env/*/values.yaml"
+      ],
+      "url": "https://raw.githubusercontent.com/socialgouv/kontinuous/v1/docs/values.schema.json"
     },
     {
       "name": "kustomization.yaml",
@@ -4564,9 +4595,10 @@
       "name": "Pantsbuild",
       "description": "Pantsbuild configuration file",
       "fileMatch": ["pants*.toml"],
-      "url": "https://json.schemastore.org/pantsbuild-2.14.0.json",
+      "url": "https://json.schemastore.org/pantsbuild-2.15.0.json",
       "versions": {
-        "2.14.0": "https://json.schemastore.org/pantsbuild-2.14.0.json"
+        "2.14.0": "https://json.schemastore.org/pantsbuild-2.14.0.json",
+        "2.15.0": "https://json.schemastore.org/pantsbuild-2.15.0.json"
       }
     },
     {
