@@ -7,7 +7,8 @@
 #include "GrabComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "NavigationSystem.h"
-
+#include "PeripheralHandActor.h"
+#include "PeripheralGameInstance.h"
 
 // Sets default values
 AVRPlayer::AVRPlayer()
@@ -18,13 +19,50 @@ AVRPlayer::AVRPlayer()
 	mTeleportGraphic = CreateDefaultSubobject<USceneComponent>(TEXT("TeleportGraphic"));
 	mTeleportAimStart = CreateDefaultSubobject<USceneComponent>(TEXT("TeleportAimStart"));
 	mTeleportAimStart->SetupAttachment(mRightMC);
+
+	//TODO : THIS MAY NOT BE USED; THIS IS TEMPORARY
+	mRightHandChildActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("Right Hand Child Actor"));
+	mLeftHandChildActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("Left Hand Child Actor"));
+	//Set what class they are
+	//TODO : If this is to be used, set this as the instantiation of the mRightHand and mLeftHand
+	mRightHandChildActor->SetChildActorClass(APeripheralHandActor::StaticClass());
+	mLeftHandChildActor->SetChildActorClass(APeripheralHandActor::StaticClass());
+	//Spawn hands
+	mRightHand = CreateDefaultSubobject<APeripheralHandActor>(TEXT("Right Hand"));
+	mLeftHand  = CreateDefaultSubobject<APeripheralHandActor>(TEXT("Left Hand"));
+	
+
+	mRightHandChildActor->CreateChildActor();
+
+	mRightHandChildActor->CreateChildActor();
+
+	//mHandsMap[right] = mRightHand;
+	//mHandsMap[left] = mLeftHand;
+
+	mHandsArray.Add(mRightHand);
+	mHandsArray.Add(mLeftHand);
+
+	mHandsVector.push_back(mRightHand);
+	mHandsVector.push_back(mLeftHand);
+
 }
 
 // Called when the game starts or when spawned
 void AVRPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	mPeripheralGI = Cast<UPeripheralGameInstance>(GetGameInstance());
+	if (!mPeripheralGI) {
+		//Something is very wrong
+	}
+	//Set these hands as the ones being used by the game isntance.
+	mPeripheralGI->SetHandByName("Right", mRightHand);
+	mPeripheralGI->SetHandByName("Left", mLeftHand);
+	//Set these hands as the ones being used by the game isntance. 
+	mPeripheralGI->SetHandByIndex(0, mRightHand);
+	mPeripheralGI->SetHandByIndex(1, mLeftHand);
+
 	//What do we want to do different here
 	Teleport_Released();
 	//Get refrences to hands
@@ -52,6 +90,13 @@ void AVRPlayer::BeginPlay()
 void AVRPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	//If we're using VR, we want our hands to be aligned with the motion controllers
+	if (bVR) {
+		//This should probably be changed to a better function
+		AlignHandAndMotionController(left);
+		AlignHandAndMotionController(right);
+	}
 
 	if (bTeleporting) {
 		auto hit = GetTeleportAimHit();
@@ -90,6 +135,53 @@ void AVRPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 
 #pragma region VR
+void AVRPlayer::AlignHandAndMotionController(APeripheralHandActor* hand, UMotionControllerComponent* mc)
+{
+	if (!hand) {
+		//Somethings very wrong
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("AlignHand no hand")));
+		return;
+	}
+	if (!mc) {
+
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("AlignHand no mc")));
+		return;
+	}
+	//TODO : THIS OFFSET SHOULD BE SET AS A PART OF THE "TRICK THE BRAIN" SEGMENT; USE GAME INSTANCE HERE MAYBE
+	FVector offset(0, 0, 0);
+
+	FVector loc = mc->GetComponentLocation();
+	FRotator rot = mc->GetComponentRotation();
+
+	loc += offset;
+
+	hand->SetActorLocation(loc);
+	hand->SetActorRotation(rot);
+}
+void AVRPlayer::AlignHandAndMotionController(EHandSide side)
+{
+	APeripheralHandActor* hand = nullptr;
+	UMotionControllerComponent* mc = nullptr;
+	if (side == right) {
+		hand = mRightHand;
+		mc = mRightMC;
+	}
+	if (side == right) {
+		hand = mLeftHand;
+		mc = mLeftMC;
+	}
+	if (!hand) {
+		//Somethings very wrong
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("AlignHand no hand")));
+		return;
+	}
+	if (!mc) {
+
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("AlignHand no mc")));
+		return;
+	}
+	AlignHandAndMotionController(hand, mc);
+}
 bool AVRPlayer::StartVR()
 {
 	bVR = true;

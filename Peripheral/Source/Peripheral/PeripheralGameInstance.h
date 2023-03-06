@@ -6,14 +6,30 @@
 #include "Engine/GameInstance.h"
 #include "PeripheralGameInstance.generated.h"
 
-/**
- * 
- */
+USTRUCT(BlueprintType)
+struct FPeripheralLevel {
+	GENERATED_USTRUCT_BODY()
+
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FString mTitle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FString mDescription;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FName mLevelName = "AdamMap";
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UTexture2D* mThumbnail = nullptr;
+};
 UCLASS()
 class PERIPHERAL_API UPeripheralGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 public:
+
+	UPeripheralGameInstance();
+
 	UFUNCTION(BlueprintCallable)
 		void SetSelectedMapNameString(FString name) {
 		mSelectedMapNameString = name;
@@ -22,6 +38,57 @@ public:
 		FString GetSelectedMapNameString() {
 		return mSelectedMapNameString;
 	};
+
+	class APeripheralHandActor* GetHandByName(FString name) {
+		return mHandsMap[name];
+	};
+	class APeripheralHandActor* GetHandByIndex(int index) {
+		return mHandsArray[index];
+	};
+
+	void SetHandByName(FString name, APeripheralHandActor* hand) {
+		if (mHandsMap.Contains(name)) {
+			mHandsMap[name] = hand;
+		}
+		else {
+			mHandsMap.Add({ name, hand });
+		}
+		
+	}
+	void SetHandByIndex(int index, APeripheralHandActor* hand) {
+	
+	}
+
+	//Levels
+	UFUNCTION(BlueprintCallable)
+	bool AddLevel(FPeripheralLevel level) {
+		if (!mLevels.Contains(level.mLevelName)) {
+			mLevels.Add({ level.mLevelName, level });
+			return true;
+		}
+		return false;
+	};
+	
+	UFUNCTION(BlueprintCallable)
+	TArray<FPeripheralLevel> GetAllLevelsArray() {
+		TArray<FPeripheralLevel> levels;
+		for (auto level : mLevels) {
+			levels.Add(level.Value);
+		}
+		return levels;
+	};
+
+	bool RequestOpenLevelByName(FName name);
+
 private:
+	//Hands
+	class APeripheralHandActor* mRightHand;
+	APeripheralHandActor* mLeftHand;
+
+	TMap<FString, APeripheralHandActor*> mHandsMap;
+	TArray<APeripheralHandActor*> mHandsArray;
+
 	FString mSelectedMapNameString = "";
+
+	TMap<FName, FPeripheralLevel> mLevels;
 };
