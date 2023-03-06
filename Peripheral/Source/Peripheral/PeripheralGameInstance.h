@@ -22,6 +22,21 @@ struct FPeripheralLevel {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UTexture2D* mThumbnail = nullptr;
 };
+USTRUCT(BlueprintType)
+struct FProfile {
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FString mName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FString mDescription;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UTexture2D* mPicture = nullptr;
+};
+
+
 UCLASS()
 class PERIPHERAL_API UPeripheralGameInstance : public UGameInstance
 {
@@ -81,6 +96,13 @@ public:
 
 	bool RequestOpenLevelByName(FName name);
 
+	//Profiles
+	UFUNCTION(BlueprintCallable)
+	void AddProfile(FProfile profile);
+	UFUNCTION(BlueprintCallable)
+	TArray<FProfile> GetAllProfiles();
+	UFUNCTION(BlueprintCallable)
+	FProfile GetProfile(FString name);
 private:
 	//Hands
 	class APeripheralHandActor* mRightHand;
@@ -92,4 +114,7 @@ private:
 	FString mSelectedMapNameString = "";
 
 	TMap<FName, FPeripheralLevel> mLevels;
+
+	TArray<FProfile> mProfiles;
+
 };

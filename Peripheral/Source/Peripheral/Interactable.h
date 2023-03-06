@@ -10,8 +10,8 @@
 
 
 struct FInteractionResult {
-		//Maybe some sort of PeripheralAgent
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	//Maybe some sort of PeripheralAgent
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		AActor* mFirstInteractor = nullptr;
 	//Maybe some sort of PeripheralAgent
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

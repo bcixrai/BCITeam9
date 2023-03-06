@@ -21,3 +21,22 @@ bool UPeripheralGameInstance::RequestOpenLevelByName(FName name)
 	
 	return true;
 }
+
+void UPeripheralGameInstance::AddProfile(FProfile profile)
+{
+	mProfiles.Add(profile);
+}
+
+TArray<FProfile> UPeripheralGameInstance::GetAllProfiles()
+{
+	return mProfiles;
+}
+
+FProfile UPeripheralGameInstance::GetProfile(FString name)
+{
+	for (auto p : mProfiles) {
+		if (p.mName == name) {
+			return p;
+		}
+	}
+}
