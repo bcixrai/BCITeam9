@@ -18,6 +18,7 @@ public:
 
 	APeripheralGameModeBase();
 
+	virtual void StartPlay() override;
 private:
 	
 	//Member

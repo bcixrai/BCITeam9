@@ -2,7 +2,7 @@
 
 
 #include "PeripheralHandActor.h"
-
+#include "MotionControllerComponent.h"
 // Sets default values
 APeripheralHandActor::APeripheralHandActor()
 {
@@ -27,26 +27,59 @@ void APeripheralHandActor::Tick(float DeltaTime)
 
 bool APeripheralHandActor::AttachToMotionController(UMotionControllerComponent* mc)
 {
-
-	return false;
+	//Are we already attached to something ? 
+	if (bAttatched) {
+		return false;
+	}
+	AttachToComponent(mc, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	bAttatched = true;
+	//Check for attachment
+	if (!IsAttachedTo(mc->GetOwner())) {
+		bAttatched = false;
+	}
+	return bAttatched;
 }
 
 bool APeripheralHandActor::AttachToMotionController()
 {
+	if (mMotionController) {
+		return AttachToMotionController(mMotionController);
+	}
 	return false;
 }
 
 bool APeripheralHandActor::DetachFromMotionController(UMotionControllerComponent* mc)
 {
-	return false;
+	//Check we're actualyl attached to the motion controller
+	if (!IsAttachedTo(mc->GetOwner())) {
+		//Return false if we're not attached
+		return false;
+	}
+	//Deat
+	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	//We should now be detatched
+	bAttatched = false;
+	//Check detatchment
+	if (IsAttachedTo(mc->GetOwner())) {
+		//Something is wrong
+		bAttatched = true;
+	}
+	
+	//If bAttached is false, we want to return true
+	return !bAttatched;
 }
 
 bool APeripheralHandActor::DetachFromMotionController()
 {
+	if (mMotionController) {
+		return DetachFromMotionController(mMotionController);
+	}
 	return false;
 }
 
 void APeripheralHandActor::SetMotionController(UMotionControllerComponent* mc)
 {
+	//Are we already de
+	mMotionController = mc;
 }
 

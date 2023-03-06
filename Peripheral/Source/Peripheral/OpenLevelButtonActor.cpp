@@ -25,6 +25,18 @@ void AOpenLevelButtonActor::Tick(float DeltaTime)
 
 }
 
+FInteractionResult AOpenLevelButtonActor::Interact(AActor* interactor)
+{
+	FInteractionResult result;
+
+	result.mFirstInteractor = interactor;
+	result.mSecondInteractor = this;
+
+	result.mMessage = "Open Level" + mLevelName.ToString();
+
+	return result;
+}
+
 void AOpenLevelButtonActor::Pressed()
 {
 	auto gi = Cast<UPeripheralGameInstance>(GetGameInstance());

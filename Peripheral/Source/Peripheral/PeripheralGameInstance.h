@@ -64,6 +64,7 @@ public:
 	bool AddLevel(FPeripheralLevel level) {
 		if (!mLevels.Contains(level.mLevelName)) {
 			mLevels.Add({ level.mLevelName, level });
+			GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Green, FString::Printf(TEXT("GI : Added level %s"), *level.mLevelName.ToString()));
 			return true;
 		}
 		return false;

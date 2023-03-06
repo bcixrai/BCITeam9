@@ -4,11 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interactable.h"
 #include "OpenLevelButtonActor.generated.h"
 
 UCLASS()
-class PERIPHERAL_API AOpenLevelButtonActor : public AActor
+class PERIPHERAL_API AOpenLevelButtonActor : public AActor, public Interactable
 {
+	
 	GENERATED_BODY()
 	
 public:	
@@ -22,7 +24,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	void Pressed();
+	virtual FInteractionResult Interact(AActor* interactor);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName mLevelName;
 };
