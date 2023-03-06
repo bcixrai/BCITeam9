@@ -15,3 +15,18 @@
 //	}
 //	GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Green, TEXT("VRPlayer Possesed"));
 //}
+
+void AVRPlayerController::BeginPlay()
+{
+	
+	Super::BeginPlay();
+
+	mVRPlayer = Cast<AVRPlayer>(GetPawn());
+	if (!mVRPlayer) {
+	}
+}
+
+void AVRPlayerController::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}

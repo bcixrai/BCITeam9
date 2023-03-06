@@ -37,15 +37,4 @@ FInteractionResult AOpenLevelButtonActor::Interact(AActor* interactor)
 	return result;
 }
 
-void AOpenLevelButtonActor::Pressed()
-{
-	auto gi = Cast<UPeripheralGameInstance>(GetGameInstance());
-	if (!gi) {
-		//Somethigns very wrong
-	}
-	bool open = gi->RequestOpenLevelByName(mLevelName);
-	if (!open) {
-		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("Request to open level was not accepted")));
-	}
-}
 

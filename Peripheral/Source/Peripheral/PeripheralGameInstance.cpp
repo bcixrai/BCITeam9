@@ -39,4 +39,5 @@ FProfile UPeripheralGameInstance::GetProfile(FString name)
 			return p;
 		}
 	}
+	return FProfile();
 }
