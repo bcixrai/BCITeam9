@@ -3,15 +3,30 @@
 
 #include "VRPlayerController.h"
 #include "VRPlayer.h"
-void AVRPlayerController::OnPossess(APawn* pawn)
+//void AVRPlayerController::OnPossess(APawn* pawn)
+//{
+//	Super::OnPossess(pawn);
+//
+//	mPlayer = Cast<AVRPlayer>(pawn);
+//	if (!mPlayer) {
+//
+//		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Green, TEXT("PC : Not a AVRPlayer"));
+//		return;
+//	}
+//	GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Green, TEXT("VRPlayer Possesed"));
+//}
+
+void AVRPlayerController::BeginPlay()
 {
-	//Super::OnPossess(pawn);
+	
+	Super::BeginPlay();
 
-	mPlayer = Cast<AVRPlayer>(pawn);
-	if (!mPlayer) {
-
-		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Green, TEXT("PC : Not a AVRPlayer"));
-		return;
+	mVRPlayer = Cast<AVRPlayer>(GetPawn());
+	if (!mVRPlayer) {
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Green, TEXT("VRPlayer Possesed"));
+}
+
+void AVRPlayerController::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
 }

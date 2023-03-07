@@ -6,6 +6,9 @@
 #include "GameFramework/Character.h"
 #include "VRPlayer.generated.h"
 
+UENUM()
+enum EHandSide{ right, left};
+
 UCLASS()
 class PERIPHERAL_API AVRPlayer : public ACharacter
 {
@@ -27,13 +30,24 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	
+	class UPeripheralGameInstance* mPeripheralGI;
 	//Hands
+	class APeripheralHandActor* mRightHand;
+	APeripheralHandActor* mLeftHand;
+
+	TMap<EHandSide, APeripheralHandActor*> mHandsMap;
+	std::vector< APeripheralHandActor*> mHandsVector;
+	TArray<APeripheralHandActor*> mHandsArray;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UMotionControllerComponent* mRightMC;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UMotionControllerComponent* mLeftMC;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UChildActorComponent* mRightHandChildActor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		class UChildActorComponent* mLeftHandChildActor;
+	void AlignHandAndMotionController(APeripheralHandActor* hand, UMotionControllerComponent* mc);
+	void AlignHandAndMotionController(EHandSide side);
 	//Simple VR mode mechanic
 	bool IsVR() {
 		return bVR;

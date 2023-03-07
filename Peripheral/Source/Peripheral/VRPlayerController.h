@@ -14,7 +14,9 @@ class PERIPHERAL_API AVRPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 public:
-	virtual void OnPossess(APawn* pawn) override;
+	//virtual void OnPossess(APawn* pawn) override;
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
-	class AVRPlayer* mPlayer;
+	class AVRPlayer* mVRPlayer;
 };
