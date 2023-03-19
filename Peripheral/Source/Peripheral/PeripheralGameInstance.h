@@ -71,7 +71,7 @@ public:
 		
 	}
 	void SetHandByIndex(int index, APeripheralHandActor* hand) {
-	
+
 	}
 
 	//Levels
