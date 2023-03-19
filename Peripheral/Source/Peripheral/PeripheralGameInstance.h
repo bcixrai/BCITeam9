@@ -28,6 +28,8 @@ struct FProfile {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FString mName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FString mCortexAPIProfileName = "Adam";
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FString mDescription;
