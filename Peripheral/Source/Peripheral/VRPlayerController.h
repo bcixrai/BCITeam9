@@ -19,4 +19,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	class AVRPlayer* mVRPlayer;
+
+	class UPeripheralGameInstance* mPeripheralGI;
 };

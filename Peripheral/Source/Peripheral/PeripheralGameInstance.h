@@ -38,7 +38,8 @@ struct FProfile {
 		UTexture2D* mPicture = nullptr;
 };
 
-
+UENUM(BlueprintType)
+enum EPeripheralMode{ VR, BCI, VR_BCI, NORMAL};
 UCLASS()
 class PERIPHERAL_API UPeripheralGameInstance : public UGameInstance
 {
@@ -105,7 +106,18 @@ public:
 	TArray<FProfile> GetAllProfiles();
 	UFUNCTION(BlueprintCallable)
 	FProfile GetProfile(FString name);
+
+	UFUNCTION(BlueprintCallable)
+		void SetPeripheralMode(EPeripheralMode mode) {
+		mMode = mode;
+	}
+	UFUNCTION(BlueprintCallable)
+		EPeripheralMode GetPeripheralMode() {
+		return mMode;
+	}
 private:
+	EPeripheralMode mMode = NORMAL;
+
 	//Hands
 	class APeripheralHandActor* mRightHand;
 	APeripheralHandActor* mLeftHand;
@@ -118,5 +130,4 @@ private:
 	TMap<FName, FPeripheralLevel> mLevels;
 
 	TArray<FProfile> mProfiles;
-
 };
