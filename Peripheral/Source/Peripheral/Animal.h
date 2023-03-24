@@ -4,12 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Peripheral.h"
 #include "Animal.generated.h"
-
-UENUM(BlueprintType)
-enum EAnimalMode{ WANDER, PLAYER, IDLE, BALL, TAUNT};
-UENUM(BlueprintType)
-enum EBallMode { NOBALL, CATCH, DELIVER, HASBALL };
 
 
 UCLASS()
@@ -47,11 +43,19 @@ public:
 	void Idle(float DeltaTime);
 
 	//Taunting
+	void InteractWithPlayer(class UAnimalInteractionComponent* comp, EAnimalInteractionType reaction);
+	
 	void Taunt(float DeltaTime);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float mTauntTime = 20.f;
 	float mCurrentTauntTime = 0.f;
-
+	UPROPERTY(EditAnywhere, BluePrintReadWrite)
+		float mTauntCooldown = 5.f;
+	float mCurrentTauntCooldown = 0;
+	EAnimalInteractionType mTauntType = HAPPY;
+	EAnimalInteractionType GetCurrentTauntType() {
+		return mTauntType;
+	};
 	//Player
 	void FollowPlayer(float DeltaTime);
 	float DistanceFromPlayer();

@@ -22,6 +22,8 @@ public:
 	Interactable();
 	~Interactable();
 
+	virtual FVector GetInteractableLocation() = 0;
+
 	virtual FInteractionResult Interact(AActor* interactor) {
 
 		return FInteractionResult();

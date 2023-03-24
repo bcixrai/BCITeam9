@@ -4,14 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimInstance.h"
+#include "Peripheral.h"
 #include "AnimalAnimationInstance.generated.h"
 
 /**
  * 
  */
 
-UENUM(BlueprintType)
-enum EAnimalAnimMode{ idle};
 
 UCLASS()
 class PERIPHERAL_API UAnimalAnimationInstance : public UAnimInstance
@@ -34,6 +33,9 @@ public:
 		float mSpeed = 0;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		bool bTaunting = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		TEnumAsByte<EAnimalInteractionType> mTauntType = HAPPY;
 
 
 };

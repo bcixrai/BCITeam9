@@ -2,7 +2,8 @@
 
 
 #include "AnimalInteractionComponent.h"
-
+#include "Animal.h"
+#include "VRPlayer.h"
 // Sets default values for this component's properties
 UAnimalInteractionComponent::UAnimalInteractionComponent()
 {
@@ -21,6 +22,13 @@ void UAnimalInteractionComponent::BeginPlay()
 
 	// ...
 	
+	auto animal = Cast<AAnimal>(GetOwner());
+	if (animal) {
+		mAnimal = animal;
+	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("Animal IC : No Animal")));
+	}
 }
 
 
@@ -30,5 +38,17 @@ void UAnimalInteractionComponent::TickComponent(float DeltaTime, ELevelTick Tick
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+}
+
+FInteractionResult UAnimalInteractionComponent::Interact(AActor* interactor)
+{
+	auto player = Cast<AVRPlayer>(interactor);
+	if (!player) {
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("Animal IC : Not Player")));
+		return FInteractionResult();
+	}
+	mAnimal->InteractWithPlayer(this, mReactionType);
+
+	return FInteractionResult();
 }
 

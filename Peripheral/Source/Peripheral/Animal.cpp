@@ -4,6 +4,7 @@
 #include "Animal.h"
 #include "NavigationSystem.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "AnimalInteractionComponent.h"
 #include "VRPlayer.h"
 // Sets default values
 AAnimal::AAnimal()
@@ -86,13 +87,28 @@ void AAnimal::Idle(float DeltaTime)
 	//TODO : Set idle animation
 }
 
+void AAnimal::InteractWithPlayer(UAnimalInteractionComponent* comp, EAnimalInteractionType reaction)
+{
+	if (mMode == TAUNT) {
+		return;
+	}
+	//When can we begin to taunt
+	if (mMode == PLAYER || mMode == IDLE || (mMode == BALL && mBallMode != CATCH && mBallMode != DELIVER)) {
+		mMode = TAUNT;
+
+		mCurrentTauntTime = 0;
+
+		mTauntType = reaction;
+	}
+}
+
 void AAnimal::Taunt(float DeltaTime)
 {
 	mCurrentTauntTime += DeltaTime;
 	if (mCurrentTauntTime > mTauntTime) {
 		//Reset timer
 		mCurrentTauntTime = 0;
-		//Return to idle
+		//Return to idle and return to normal behavoir from there
 		mMode = IDLE;
 		return;
 	}

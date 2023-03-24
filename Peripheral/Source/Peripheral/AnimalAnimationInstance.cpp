@@ -16,7 +16,14 @@ void UAnimalAnimationInstance::NativeUpdateAnimation(float DeltaSeconds)
 	if (!mAnimal) {
 		return;
 	}
+
+	bTaunting = mAnimal->GetMode() == TAUNT;
+	//IF we're not taunting, dont do anything more
+	if (!bTaunting) {
+		return;
+	}
+
 	mSpeed = mAnimal->GetCurrentSpeed();
 
-	bTaunting = mAnimal->GetMode() == TAUNT ? true : false;
+	mTauntType = mAnimal->GetCurrentTauntType();
 }
