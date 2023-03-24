@@ -25,6 +25,10 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	virtual FInteractionResult Interact(AActor* interactor);
+
+	virtual FVector GetInteractableLocation() override {
+		return GetActorLocation();
+	}
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName mLevelName;
 };

@@ -30,6 +30,10 @@ public:
 
 	virtual FInteractionResult Interact(AActor* interactor);
 
+	virtual FVector GetInteractableLocation() override {
+		return GetComponentLocation();
+	}
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TEnumAsByte<EAnimalInteractionType> mReactionType = HAPPY;
 };
