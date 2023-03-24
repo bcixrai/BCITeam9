@@ -56,12 +56,16 @@ void AVRPlayer::BeginPlay()
 	if (!mPeripheralGI) {
 		//Something is very wrong
 	}
+	//What mode are we in ? 
+	auto mode = mPeripheralGI->GetPeripheralMode();
+	if (mode == NORMAL) {
+		//We're using neither VR nor BCI, then we want to play as a regular fps game ? 
+
+	}
+	
 	//Set these hands as the ones being used by the game isntance.
 	mPeripheralGI->SetHandByName("Right", mRightHand);
 	mPeripheralGI->SetHandByName("Left", mLeftHand);
-	//Set these hands as the ones being used by the game isntance. 
-	mPeripheralGI->SetHandByIndex(0, mRightHand);
-	mPeripheralGI->SetHandByIndex(1, mLeftHand);
 
 	//What do we want to do different here
 	Teleport_Released();

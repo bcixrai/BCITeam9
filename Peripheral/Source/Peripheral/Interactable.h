@@ -4,11 +4,6 @@
 
 #include "CoreMinimal.h"
 
-/**
- * 
- */
-
-
 struct FInteractionResult {
 	//Maybe some sort of PeripheralAgent
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -20,12 +15,16 @@ struct FInteractionResult {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FString mMessage = "Interaction Finished";
 };
+
 class PERIPHERAL_API Interactable
 {
 public:
 	Interactable();
 	~Interactable();
 
-	virtual FInteractionResult Interact(AActor* interactor) = 0;
+	virtual FInteractionResult Interact(AActor* interactor) {
+
+		return FInteractionResult();
+	};
 };
 
