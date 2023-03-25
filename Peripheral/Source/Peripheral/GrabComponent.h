@@ -31,8 +31,13 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		virtual bool TryRelease();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool bIsHeld = false;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		bool bSimulateOnDrop = true;
+
+	virtual void OnGrabbed();
+	virtual void OnReleased();
 };

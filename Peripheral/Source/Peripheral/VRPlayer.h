@@ -95,6 +95,20 @@ public:
 		class UMaterial* mCanTeleportMat;
 	UPROPERTY(EditAnywhere)
 		class UMaterial* mCantTeleportMat;
+
+	//Interactions
+	void Right_Interact_Pressed();
+	void Right_Interact_Released();
+	void Left_Interact_Pressed();
+	void Left_Interact_Released();
+	void Interact_Pressed(UMotionControllerComponent* mc);
+	void Interact_Released(UMotionControllerComponent* mc);
+
+	class Interactable* GetNearestInteractable(UMotionControllerComponent* mc);
+	std::vector<Interactable*> GetNearbyInteractables(UMotionControllerComponent* mc);
+
+	UPROPERTY(EditAnywhere)
+		float mInteractionRange = 25.f;
 private:
 	bool bUseBCI = false;
 

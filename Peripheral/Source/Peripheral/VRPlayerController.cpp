@@ -3,6 +3,7 @@
 
 #include "VRPlayerController.h"
 #include "VRPlayer.h"
+#include "PeripheralGameInstance.h"
 //void AVRPlayerController::OnPossess(APawn* pawn)
 //{
 //	Super::OnPossess(pawn);
@@ -21,8 +22,15 @@ void AVRPlayerController::BeginPlay()
 	
 	Super::BeginPlay();
 
+	mPeripheralGI = Cast<UPeripheralGameInstance>(GetGameInstance());
+	if (!mPeripheralGI) {
+		//Big problem, but should never happen
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("PC : Missing Game Instance")));
+	}
 	mVRPlayer = Cast<AVRPlayer>(GetPawn());
 	if (!mVRPlayer) {
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("PC : VRPlayer not found")));
+
 	}
 }
 

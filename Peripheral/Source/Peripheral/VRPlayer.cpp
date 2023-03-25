@@ -9,7 +9,7 @@
 #include "NavigationSystem.h"
 #include "PeripheralHandActor.h"
 #include "PeripheralGameInstance.h"
-
+#include "Interactable.h"
 // Sets default values
 AVRPlayer::AVRPlayer()
 {
@@ -56,12 +56,16 @@ void AVRPlayer::BeginPlay()
 	if (!mPeripheralGI) {
 		//Something is very wrong
 	}
+	//What mode are we in ? 
+	auto mode = mPeripheralGI->GetPeripheralMode();
+	if (mode == NORMAL) {
+		//We're using neither VR nor BCI, then we want to play as a regular fps game ? 
+
+	}
+	
 	//Set these hands as the ones being used by the game isntance.
 	mPeripheralGI->SetHandByName("Right", mRightHand);
 	mPeripheralGI->SetHandByName("Left", mLeftHand);
-	//Set these hands as the ones being used by the game isntance. 
-	mPeripheralGI->SetHandByIndex(0, mRightHand);
-	mPeripheralGI->SetHandByIndex(1, mLeftHand);
 
 	//What do we want to do different here
 	Teleport_Released();
@@ -131,6 +135,13 @@ void AVRPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	InputComponent->BindAction("Teleport", IE_Pressed, this, &AVRPlayer::Teleport_Pressed);
 	InputComponent->BindAction("Teleport", IE_Pressed, this, &AVRPlayer::Teleport_Released);
+
+
+	InputComponent->BindAction("Right_Interact", IE_Pressed, this,  &AVRPlayer::Right_Interact_Pressed);
+	InputComponent->BindAction("Right_Interact", IE_Pressed, this,  &AVRPlayer::Right_Interact_Pressed);
+
+	InputComponent->BindAction("Left_Interact", IE_Pressed, this, &AVRPlayer::Left_Interact_Pressed);
+	InputComponent->BindAction("Left_Interact", IE_Pressed, this, &AVRPlayer::Left_Interact_Pressed);
 }
 
 
@@ -408,5 +419,109 @@ FHitResult AVRPlayer::GetTeleportAimHit()
 	GetWorld()->LineTraceSingleByObjectType(Hit, rayStart, rayEnd, ECC_WorldDynamic, QueryParams); // simple trace function
 	return Hit;
 }
+
+
+#pragma endregion
+
+#pragma region Interaction
+
+#pragma region Right n Left 
+void AVRPlayer::Right_Interact_Pressed()
+{
+	Interact_Pressed(mRightMC);
+}
+
+void AVRPlayer::Right_Interact_Released()
+{
+	Interact_Released(mRightMC);
+}
+
+void AVRPlayer::Left_Interact_Pressed()
+{
+	Interact_Pressed(mLeftMC);
+}
+
+void AVRPlayer::Left_Interact_Released()
+{
+	Interact_Released(mLeftMC);
+}
+#pragma endregion
+
+void AVRPlayer::Interact_Pressed(UMotionControllerComponent* mc)
+{
+	//Find interactaables around the mc
+	auto inter = GetNearestInteractable(mc);
+
+	if (inter) {
+		//We can interact with it
+		inter->Interact(this);
+	}
+}
+
+void AVRPlayer::Interact_Released(UMotionControllerComponent* mc)
+{
+}
+
+Interactable* AVRPlayer::GetNearestInteractable(UMotionControllerComponent* mc)
+{
+	//Find all close by grabcomponents
+	auto interactables = GetNearbyInteractables(mc);
+
+	//Iterate trough distance
+	Interactable* nearest = nullptr;
+	float distance = 1000.f;
+	for (auto& interact : interactables) {
+		//Where is the interactable
+		FVector interactLocation = interact->GetInteractableLocation();
+
+		//Get distance from
+		float dist = FVector::Distance(interactLocation, mc->GetComponentLocation());
+		if (dist < distance) {
+			nearest = interact;
+			distance = dist;
+		}
+	}
+	return nearest;
+}
+
+std::vector<Interactable*> AVRPlayer::GetNearbyInteractables(UMotionControllerComponent* mc)
+{
+	//Object types
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray;
+	ObjectTypesArray.Add(UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_GameTraceChannel1));
+
+	//What actors to ignore
+	TArray<AActor*> ignored;
+	ignored.Add(this);
+
+	TArray<FHitResult> hits;
+	bool bHasHit = UKismetSystemLibrary::SphereTraceMultiForObjects(GetWorld(), mc->GetComponentLocation(), mc->GetComponentLocation(), 500.f,
+		ObjectTypesArray, true, ignored, EDrawDebugTrace::ForDuration, hits, true);
+
+	FCollisionShape col = FCollisionShape::MakeSphere(mInteractionRange);
+	FVector loc = mc->GetComponentLocation();
+	bool isHit = GetWorld()->SweepMultiByChannel(hits, loc, loc, FQuat::Identity, ECC_PhysicsBody, col);
+	std::vector<Interactable*> inters;
+	for (auto& hit : hits) {
+		auto actor = hit.GetActor();
+
+		//Is the actor itself an interactable ? 
+		auto inter = Cast<Interactable>(actor);
+		if (inter) {
+			inters.push_back(inter);
+		}
+		//Check its component for interactales
+		auto comps = actor->GetComponents();
+		for (auto& comp : comps) {
+			Interactable* interactable = Cast<Interactable>(comp);
+			if (interactable) {
+				inters.push_back(interactable);
+			}
+		}
+	}
+
+	return inters;
+}
+
 
 #pragma endregion
