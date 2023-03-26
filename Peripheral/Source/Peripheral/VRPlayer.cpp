@@ -9,6 +9,7 @@
 #include "NavigationSystem.h"
 #include "PeripheralHandActor.h"
 #include "PeripheralGameInstance.h"
+
 #include "Interactable.h"
 // Sets default values
 AVRPlayer::AVRPlayer()
@@ -138,10 +139,13 @@ void AVRPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 
 	InputComponent->BindAction("Right_Interact", IE_Pressed, this,  &AVRPlayer::Right_Interact_Pressed);
-	InputComponent->BindAction("Right_Interact", IE_Pressed, this,  &AVRPlayer::Right_Interact_Pressed);
+	InputComponent->BindAction("Right_Interact", IE_Released, this,  &AVRPlayer::Right_Interact_Pressed);
 
 	InputComponent->BindAction("Left_Interact", IE_Pressed, this, &AVRPlayer::Left_Interact_Pressed);
-	InputComponent->BindAction("Left_Interact", IE_Pressed, this, &AVRPlayer::Left_Interact_Pressed);
+	InputComponent->BindAction("Left_Interact", IE_Released, this, &AVRPlayer::Left_Interact_Pressed);
+
+	InputComponent->BindAction("Interact", IE_Pressed, this, &AVRPlayer::Interact_Pressed);
+
 }
 
 
@@ -450,30 +454,38 @@ void AVRPlayer::Left_Interact_Released()
 void AVRPlayer::Interact_Pressed(UMotionControllerComponent* mc)
 {
 	//Find interactaables around the mc
-	auto inter = GetNearestInteractable(mc);
-
-	if (inter) {
-		//We can interact with it
-		inter->Interact(this);
-	}
+	//auto inter = GetNearestInteractable(mc);
+	//
+	//if (inter) {
+	//	//We can interact with it
+	//	inter->Interact(this);
+	//}
 }
 
 void AVRPlayer::Interact_Released(UMotionControllerComponent* mc)
 {
 }
 
-Interactable* AVRPlayer::GetNearestInteractable(UMotionControllerComponent* mc)
+void AVRPlayer::Interact_Pressed()
+{
+}
+
+void AVRPlayer::Interact_Released()
+{
+}
+
+IInteractable* AVRPlayer::GetNearestInteractable(UMotionControllerComponent* mc)
 {
 	//Find all close by grabcomponents
 	auto interactables = GetNearbyInteractables(mc);
 
 	//Iterate trough distance
-	Interactable* nearest = nullptr;
+	IInteractable* nearest = nullptr;
 	float distance = 1000.f;
 	for (auto& interact : interactables) {
 		//Where is the interactable
 		FVector interactLocation = interact->GetInteractableLocation();
-
+		
 		//Get distance from
 		float dist = FVector::Distance(interactLocation, mc->GetComponentLocation());
 		if (dist < distance) {
@@ -484,7 +496,7 @@ Interactable* AVRPlayer::GetNearestInteractable(UMotionControllerComponent* mc)
 	return nearest;
 }
 
-std::vector<Interactable*> AVRPlayer::GetNearbyInteractables(UMotionControllerComponent* mc)
+std::vector<IInteractable*> AVRPlayer::GetNearbyInteractables(UMotionControllerComponent* mc)
 {
 	//Object types
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray;
@@ -501,19 +513,18 @@ std::vector<Interactable*> AVRPlayer::GetNearbyInteractables(UMotionControllerCo
 	FCollisionShape col = FCollisionShape::MakeSphere(mInteractionRange);
 	FVector loc = mc->GetComponentLocation();
 	bool isHit = GetWorld()->SweepMultiByChannel(hits, loc, loc, FQuat::Identity, ECC_PhysicsBody, col);
-	std::vector<Interactable*> inters;
+	std::vector<IInteractable*> inters;
 	for (auto& hit : hits) {
 		auto actor = hit.GetActor();
-
 		//Is the actor itself an interactable ? 
-		auto inter = Cast<Interactable>(actor);
+		auto inter = Cast<IInteractable>(actor);
 		if (inter) {
 			inters.push_back(inter);
 		}
 		//Check its component for interactales
 		auto comps = actor->GetComponents();
 		for (auto& comp : comps) {
-			Interactable* interactable = Cast<Interactable>(comp);
+			auto interactable = Cast<IInteractable>(comp);
 			if (interactable) {
 				inters.push_back(interactable);
 			}

@@ -2,31 +2,22 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "Interactable.generated.h"
 
-struct FInteractionResult {
-	//Maybe some sort of PeripheralAgent
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		AActor* mFirstInteractor = nullptr;
-	//Maybe some sort of PeripheralAgent
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		AActor* mSecondInteractor = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FString mMessage = "Interaction Finished";
-};
-
-class PERIPHERAL_API Interactable
+/**
+ * 
+ */
+UINTERFACE(MinimalAPI, Blueprintable)
+class UInteractable : public UInterface
 {
-public:
-	Interactable();
-	~Interactable();
-
-	virtual FVector GetInteractableLocation() = 0;
-
-	virtual FInteractionResult Interact(AActor* interactor) {
-
-		return FInteractionResult();
-	};
+	GENERATED_BODY()
+	
 };
 
+class IInteractable {
+	GENERATED_BODY()
+public:
+
+	virtual bool Interact(AActor* interactor)=0;
+	virtual FVector GetInteractableLocation() = 0;
+};

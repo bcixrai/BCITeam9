@@ -30,7 +30,7 @@ void AAnimal::BeginPlay()
 		}
 	}
 	
-	
+	mMode = WANDER;
 	NewWanderPoint();
 }
 
@@ -105,11 +105,15 @@ void AAnimal::InteractWithPlayer(UAnimalInteractionComponent* comp, EAnimalInter
 void AAnimal::Taunt(float DeltaTime)
 {
 	mCurrentTauntTime += DeltaTime;
+
+	GEngine->AddOnScreenDebugMessage(10, 10, FColor::Green, FString::Printf(TEXT("Animal : TauntTime : %f"), mCurrentTauntTime));
 	if (mCurrentTauntTime > mTauntTime) {
 		//Reset timer
 		mCurrentTauntTime = 0;
 		//Return to idle and return to normal behavoir from there
 		mMode = IDLE;
+
+		GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Green, FString::Printf(TEXT("Animal : Stopped Taunt")));
 		return;
 	}
 
@@ -285,6 +289,9 @@ void AAnimal::PickupBall()
 
 void AAnimal::DropBall()
 {
+	if (!mBall) {
+		return;
+	}
 	//Detach ball from mouth
 	mBall->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 
@@ -299,6 +306,9 @@ float AAnimal::GetCurrentSpeed()
 		return 0.f;
 	}
 
+	if (mMode == PLAYER) {
+		return mFollowPlayerSpeed;
+	}
 	if (mMode == BALL) {
 		if (mBallMode == CATCH) {
 			return mCatchBallSpeed;
@@ -312,4 +322,9 @@ float AAnimal::GetCurrentSpeed()
 		return mWanderSpeed;
 	}
 	return 0.0f;
+}
+
+void AAnimal::Test()
+{
+	InteractWithPlayer(nullptr, HAPPY);
 }

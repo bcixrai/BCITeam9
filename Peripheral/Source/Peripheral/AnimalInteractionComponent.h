@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Components/SceneComponent.h"
-#include "Interactable.h"
 #include "Peripheral.h"
+#include "Interactable.h"
 #include "AnimalInteractionComponent.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class PERIPHERAL_API UAnimalInteractionComponent : public USceneComponent, public Interactable
+class PERIPHERAL_API UAnimalInteractionComponent : public USceneComponent, public IInteractable
 {
 	GENERATED_BODY()
 
@@ -28,11 +28,15 @@ public:
 
 	class AAnimal* mAnimal;
 
-	virtual FInteractionResult Interact(AActor* interactor);
-
+	//virtual FInteractionResult Interact(AActor* interactor) override;
+	//
+	//virtual FVector GetInteractableLocation() override {
+	//	return GetComponentLocation();
+	//}
+	virtual bool Interact(AActor* interactor) override;
 	virtual FVector GetInteractableLocation() override {
 		return GetComponentLocation();
-	}
+	};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TEnumAsByte<EAnimalInteractionType> mReactionType = HAPPY;
