@@ -40,15 +40,14 @@ void UAnimalInteractionComponent::TickComponent(float DeltaTime, ELevelTick Tick
 	// ...
 }
 
-FInteractionResult UAnimalInteractionComponent::Interact(AActor* interactor)
+bool UAnimalInteractionComponent::Interact(AActor* interactor)
 {
 	auto player = Cast<AVRPlayer>(interactor);
 	if (!player) {
 		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("Animal IC : Not Player")));
-		return FInteractionResult();
+		return false;
 	}
 	mAnimal->InteractWithPlayer(this, mReactionType);
-
-	return FInteractionResult();
+	return true;
 }
 

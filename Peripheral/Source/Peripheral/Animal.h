@@ -43,6 +43,7 @@ public:
 	void Idle(float DeltaTime);
 
 	//Taunting
+	UFUNCTION(BlueprintCallable)
 	void InteractWithPlayer(class UAnimalInteractionComponent* comp, EAnimalInteractionType reaction);
 	
 	void Taunt(float DeltaTime);
@@ -109,6 +110,8 @@ public:
 	EAnimalMode GetMode() {
 		return mMode;
 	}
+	UFUNCTION(BlueprintCallable)
+	void Test();
 private:
 	AActor* mPlayer;
 

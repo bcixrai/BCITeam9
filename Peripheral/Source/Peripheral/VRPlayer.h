@@ -103,12 +103,14 @@ public:
 	void Left_Interact_Released();
 	void Interact_Pressed(UMotionControllerComponent* mc);
 	void Interact_Released(UMotionControllerComponent* mc);
-
-	class Interactable* GetNearestInteractable(UMotionControllerComponent* mc);
-	std::vector<Interactable*> GetNearbyInteractables(UMotionControllerComponent* mc);
+	void Interact_Pressed();
+	void Interact_Released();
+	class IInteractable* GetNearestInteractable(UMotionControllerComponent* mc);
+	std::vector<IInteractable*> GetNearbyInteractables(UMotionControllerComponent* mc);
 
 	UPROPERTY(EditAnywhere)
 		float mInteractionRange = 25.f;
+
 private:
 	bool bUseBCI = false;
 
