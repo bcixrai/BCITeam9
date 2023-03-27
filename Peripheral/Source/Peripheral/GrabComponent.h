@@ -40,4 +40,6 @@ public:
 
 	virtual void OnGrabbed();
 	virtual void OnReleased();
+
+	UMotionControllerComponent* mMC;
 };

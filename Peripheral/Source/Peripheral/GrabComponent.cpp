@@ -55,7 +55,10 @@ bool UGrabComponent::TryGrab(UMotionControllerComponent* mc)
 		bIsHeld = true;
 		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Green, FString::Printf(TEXT("Grabbed")));
 
+		mMC = mc;
 		OnGrabbed();
+
+
 		return true;
 	}
 	else {
@@ -81,6 +84,7 @@ bool UGrabComponent::TryRelease()
 	bIsHeld = false;
 
 	GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Green, FString::Printf(TEXT("Released")));
+	mMC = nullptr;
 	OnReleased();
 	return true;
 }
