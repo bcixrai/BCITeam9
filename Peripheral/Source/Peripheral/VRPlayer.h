@@ -9,6 +9,7 @@
 UENUM()
 enum EHandSide{ right, left};
 
+class UCameraComponent;
 UCLASS()
 class PERIPHERAL_API AVRPlayer : public ACharacter
 {
@@ -31,6 +32,25 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	class UPeripheralGameInstance* mPeripheralGI;
+
+	//Camera
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+		UCameraComponent* mCamera;
+
+	//FPS MOVEment
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+		float mMoveSpeed = 100.f;					  
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+		float mTurnRate = 45.f;					  
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+		float mLookUpRate = 45.f;
+
+	void MoveForward(float value);
+	void MoveRight(float value);
+
+	void Turn(float value);
+	void LookUp(float value);
+
 	//Hands
 	class APeripheralHandActor* mRightHand;
 	APeripheralHandActor* mLeftHand;
@@ -96,17 +116,19 @@ public:
 	UPROPERTY(EditAnywhere)
 		class UMaterial* mCantTeleportMat;
 
-	//Interactions
+	//For VR where both hand can be used for interaction
 	void Right_Interact_Pressed();
 	void Right_Interact_Released();
 	void Left_Interact_Pressed();
 	void Left_Interact_Released();
 	void Interact_Pressed(UMotionControllerComponent* mc);
 	void Interact_Released(UMotionControllerComponent* mc);
+
+	//For Non-VR gameplay, these are called from the E button
 	void Interact_Pressed();
 	void Interact_Released();
-	class IInteractable* GetNearestInteractable(UMotionControllerComponent* mc);
-	std::vector<IInteractable*> GetNearbyInteractables(UMotionControllerComponent* mc);
+	class IInteractable* GetNearestInteractable(FVector location);
+	std::vector<IInteractable*> GetNearbyInteractables(FVector location);
 
 	UPROPERTY(EditAnywhere)
 		float mInteractionRange = 25.f;

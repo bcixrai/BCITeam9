@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "Peripheral.h"
 #include "PeripheralGameInstance.generated.h"
 
 USTRUCT(BlueprintType)
@@ -38,8 +39,6 @@ struct FProfile {
 		UTexture2D* mPicture = nullptr;
 };
 
-UENUM(BlueprintType)
-enum EPeripheralMode{ VR, BCI, VR_BCI, NORMAL};
 UCLASS()
 class PERIPHERAL_API UPeripheralGameInstance : public UGameInstance
 {
@@ -107,17 +106,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FProfile GetProfile(FString name);
 
-	UFUNCTION(BlueprintCallable)
-		void SetPeripheralMode(EPeripheralMode mode) {
-		mMode = mode;
-	}
-	UFUNCTION(BlueprintCallable)
-		EPeripheralMode GetPeripheralMode() {
-		return mMode;
-	}
-private:
-	EPeripheralMode mMode = NORMAL;
 
+private:
+	
 	//Hands
 	class APeripheralHandActor* mRightHand;
 	APeripheralHandActor* mLeftHand;

@@ -2,24 +2,49 @@
 
 
 #include "VRPlayer.h"
-
+//General
+#include "Peripheral.h"
+#include "PeripheralGameInstance.h"
 #include "MotionControllerComponent.h"
+
+//Components
+#include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GrabComponent.h"
-#include "Kismet/KismetSystemLibrary.h"
+
+//Misc
+#include "Interactable.h"
 #include "NavigationSystem.h"
 #include "PeripheralHandActor.h"
-#include "PeripheralGameInstance.h"
 
-#include "Interactable.h"
+//Libs
+#include "Kismet/KismetSystemLibrary.h"
+
+//VR
+#include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
+#include "HeadMountedDisplayFunctionLibrary.h"
+
 // Sets default values
 AVRPlayer::AVRPlayer()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	mTeleportGraphic = CreateDefaultSubobject<USceneComponent>(TEXT("TeleportGraphic"));
-	mTeleportAimStart = CreateDefaultSubobject<USceneComponent>(TEXT("TeleportAimStart"));
-	mTeleportAimStart->SetupAttachment(mRightMC);
+	//UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
+	
+	//Camera
+	mCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+	mCamera->SetupAttachment(GetCapsuleComponent());
+	mCamera->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f)); // Position the camera
+	mCamera->bUsePawnControlRotation = true;
+
+	// Create VR Controllers.
+	mRightMC = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("R_MotionController"));
+	mRightMC->MotionSource = FXRMotionControllerBase::RightHandSourceId; //idk why this is done
+	mRightMC->SetupAttachment(RootComponent);
+
+	mLeftMC = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("L_MotionController"));
+	mLeftMC->SetupAttachment(RootComponent);
 
 	//TODO : THIS MAY NOT BE USED; THIS IS TEMPORARY
 	mRightHandChildActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("Right Hand Child Actor"));
@@ -28,9 +53,11 @@ AVRPlayer::AVRPlayer()
 	//TODO : If this is to be used, set this as the instantiation of the mRightHand and mLeftHand
 	mRightHandChildActor->SetChildActorClass(APeripheralHandActor::StaticClass());
 	mLeftHandChildActor->SetChildActorClass(APeripheralHandActor::StaticClass());
+
 	//Spawn hands
 	mRightHand = CreateDefaultSubobject<APeripheralHandActor>(TEXT("Right Hand"));
 	mLeftHand  = CreateDefaultSubobject<APeripheralHandActor>(TEXT("Left Hand"));
+	
 	
 
 	mRightHandChildActor->CreateChildActor();
@@ -46,6 +73,10 @@ AVRPlayer::AVRPlayer()
 	mHandsVector.push_back(mRightHand);
 	mHandsVector.push_back(mLeftHand);
 
+	//Teleportation
+	mTeleportGraphic = CreateDefaultSubobject<USceneComponent>(TEXT("TeleportGraphic"));
+	mTeleportAimStart = CreateDefaultSubobject<USceneComponent>(TEXT("TeleportAimStart"));
+	mTeleportAimStart->SetupAttachment(mRightMC);
 }
 
 // Called when the game starts or when spawned
@@ -58,32 +89,38 @@ void AVRPlayer::BeginPlay()
 		//Something is very wrong
 	}
 	//What mode are we in ? 
-	auto mode = mPeripheralGI->GetPeripheralMode();
+	auto mode = GetPeripheralMode();
 	if (mode == NORMAL) {
 		//We're using neither VR nor BCI, then we want to play as a regular fps game ? 
 
 	}
-	
+	if (mode == VR_BCI) {
+		//Here we want normal VR with BCI hand override enabled
+
+	}
+	if (mode == VR) {
+		//Normal VR without any overrides, 
+	}
+	if (mode == BCI) {
+		//Here we want normal FPS controls, no VR, with a hand that can be overriden
+		//mOverridenHand = mRightMC;
+	}
+
+
 	//Set these hands as the ones being used by the game isntance.
 	mPeripheralGI->SetHandByName("Right", mRightHand);
 	mPeripheralGI->SetHandByName("Left", mLeftHand);
 
 	//What do we want to do different here
 	Teleport_Released();
-	//Get refrences to hands
-	auto comps = GetComponents();
-	for (auto comp : comps) {
-		if (comp->GetName() == "RightMC") {
-			mRightMC = Cast<UMotionControllerComponent>(comp);
-		}
-		if (comp->GetName() == "LeftMC") {
-			mLeftMC = Cast<UMotionControllerComponent>(comp);
-		}
-	}
-	TArray<USceneComponent*> scens;
-	mTeleportGraphic->GetChildrenComponents(false, scens);
 
-	for (auto comp : scens) {
+
+	auto comps = GetComponents();
+
+	TArray<USceneComponent*> sceneComps;
+	mTeleportGraphic->GetChildrenComponents(false, sceneComps);
+
+	for (auto comp : sceneComps) {
 		auto mesh = Cast<UStaticMeshComponent>(comp);
 		if (mesh) {
 			mTeleportAimMesh = mesh;
@@ -146,8 +183,44 @@ void AVRPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 	InputComponent->BindAction("Interact", IE_Pressed, this, &AVRPlayer::Interact_Pressed);
 
+	// Bind movement events
+	InputComponent->BindAxis("MoveForward", this, &AVRPlayer::MoveForward);
+	InputComponent->BindAxis("MoveRight", this, &AVRPlayer::MoveRight);
+
+	InputComponent->BindAxis("Turn", this, &AVRPlayer::Turn);
+	InputComponent->BindAxis("LookUp", this, &AVRPlayer::LookUp);
+
+	// Bind jump events
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+}
+#pragma region FPS Controls
+void AVRPlayer::MoveForward(float value)
+{
+	if (value != 0.0f)
+	{
+		// add movement in that direction
+		AddMovementInput(GetActorForwardVector(), value);
+	}
 }
 
+void AVRPlayer::MoveRight(float value)
+{
+	if (value != 0.0f)
+	{
+		// add movement in that direction
+		AddMovementInput(GetActorRightVector(), value);
+	}
+}
+void AVRPlayer::Turn(float value)
+{
+	AddControllerYawInput(value * mTurnRate * GetWorld()->GetDeltaSeconds());
+}
+void AVRPlayer::LookUp(float value)
+{
+	AddControllerPitchInput(value * mLookUpRate * GetWorld()->GetDeltaSeconds());
+}
+#pragma endregion
 
 #pragma region VR
 void AVRPlayer::AlignHandAndMotionController(APeripheralHandActor* hand, UMotionControllerComponent* mc)
@@ -454,12 +527,12 @@ void AVRPlayer::Left_Interact_Released()
 void AVRPlayer::Interact_Pressed(UMotionControllerComponent* mc)
 {
 	//Find interactaables around the mc
-	//auto inter = GetNearestInteractable(mc);
-	//
-	//if (inter) {
-	//	//We can interact with it
-	//	inter->Interact(this);
-	//}
+	auto inter = GetNearestInteractable(mc->GetComponentLocation());
+	
+	if (inter) {
+		//We can interact with it
+		inter->Interact(this);
+	}
 }
 
 void AVRPlayer::Interact_Released(UMotionControllerComponent* mc)
@@ -474,11 +547,15 @@ void AVRPlayer::Interact_Released()
 {
 }
 
-IInteractable* AVRPlayer::GetNearestInteractable(UMotionControllerComponent* mc)
+IInteractable* AVRPlayer::GetNearestInteractable(FVector location)
 {
 	//Find all close by grabcomponents
-	auto interactables = GetNearbyInteractables(mc);
+	auto interactables = GetNearbyInteractables(location);
 
+	//Debug
+	if (Debug()) {
+		
+	}
 	//Iterate trough distance
 	IInteractable* nearest = nullptr;
 	float distance = 1000.f;
@@ -487,7 +564,7 @@ IInteractable* AVRPlayer::GetNearestInteractable(UMotionControllerComponent* mc)
 		FVector interactLocation = interact->GetInteractableLocation();
 		
 		//Get distance from
-		float dist = FVector::Distance(interactLocation, mc->GetComponentLocation());
+		float dist = FVector::Distance(interactLocation, location);
 		if (dist < distance) {
 			nearest = interact;
 			distance = dist;
@@ -496,7 +573,7 @@ IInteractable* AVRPlayer::GetNearestInteractable(UMotionControllerComponent* mc)
 	return nearest;
 }
 
-std::vector<IInteractable*> AVRPlayer::GetNearbyInteractables(UMotionControllerComponent* mc)
+std::vector<IInteractable*> AVRPlayer::GetNearbyInteractables(FVector location)
 {
 	//Object types
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypesArray;
@@ -507,11 +584,11 @@ std::vector<IInteractable*> AVRPlayer::GetNearbyInteractables(UMotionControllerC
 	ignored.Add(this);
 
 	TArray<FHitResult> hits;
-	bool bHasHit = UKismetSystemLibrary::SphereTraceMultiForObjects(GetWorld(), mc->GetComponentLocation(), mc->GetComponentLocation(), 500.f,
+	bool bHasHit = UKismetSystemLibrary::SphereTraceMultiForObjects(GetWorld(), location, location, 500.f,
 		ObjectTypesArray, true, ignored, EDrawDebugTrace::ForDuration, hits, true);
 
 	FCollisionShape col = FCollisionShape::MakeSphere(mInteractionRange);
-	FVector loc = mc->GetComponentLocation();
+	FVector loc = location;
 	bool isHit = GetWorld()->SweepMultiByChannel(hits, loc, loc, FQuat::Identity, ECC_PhysicsBody, col);
 	std::vector<IInteractable*> inters;
 	for (auto& hit : hits) {
