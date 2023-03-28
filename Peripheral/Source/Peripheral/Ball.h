@@ -24,6 +24,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	class UGrabComponent* mGrab;
-
+	class UStaticMeshComponent* mMesh;
+	void PickedUp();
+	void Dropped();
 	
 };

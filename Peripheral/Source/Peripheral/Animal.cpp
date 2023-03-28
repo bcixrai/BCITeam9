@@ -6,6 +6,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "AnimalInteractionComponent.h"
 #include "VRPlayer.h"
+#include "Ball.h"
 // Sets default values
 AAnimal::AAnimal()
 {
@@ -13,6 +14,9 @@ AAnimal::AAnimal()
 	PrimaryActorTick.bCanEverTick = true;
 
 	mBallHolder = CreateDefaultSubobject<USceneComponent>(TEXT("Ball Holder"));
+	mBallHolder->SetupAttachment(RootComponent);
+	mBallMesh = CreateAbstractDefaultSubobject<UStaticMeshComponent>(TEXT("Ball Mesh"));
+	mBallMesh->SetupAttachment(mBallHolder);
 }
 
 // Called when the game starts or when spawned
@@ -29,7 +33,7 @@ void AAnimal::BeginPlay()
 			mesh->AnimClass = mAnimInstanceBP;
 		}
 	}
-	
+	mBallMesh->SetHiddenInGame(true);
 	mMode = WANDER;
 	NewWanderPoint();
 }
@@ -265,6 +269,9 @@ void AAnimal::Deliver(float DeltaTime)
 		mMode = IDLE;
 		//The ball has now been delivered as far as the animal is conecered, it will hold on to it for a certain amount of time, then drop it, no matter hwat happens
 		mBallMode = HASBALL;
+
+		DropBall();
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, TEXT("Animal : Finished Delivery"));
 	}
 }
 
@@ -282,18 +289,29 @@ void AAnimal::PickupBall()
 {
 	//The ball has been picked up, no we deliver it
 	mBallMode = DELIVER;
+	
+	if (!mBall) {
+		return;
+	}
+	//KIll the picked up ball
+	mBall->Destroy();
+	mBall = nullptr;
 
-	//Attach ball to mouth, snap to the position
-	mBall->AttachToComponent(mBallHolder, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	//Enable ball mesh
+	mBallMesh->SetHiddenInGame(false);
 }
 
 void AAnimal::DropBall()
 {
-	if (!mBall) {
-		return;
+	//Turn off ball mesh
+	mBallMesh->SetHiddenInGame(true);
+
+	//Spawn ball at holding position
+	FActorSpawnParameters SpawnInfo;
+	auto ball = Cast<ABall>(GetWorld()->SpawnActor(mBallBP));
+	if (ball) {
+		ball->SetActorLocation(mBallHolder->GetComponentLocation() + mBallSpawnOffset);
 	}
-	//Detach ball from mouth
-	mBall->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 
 	mBallMode = NOBALL;
 

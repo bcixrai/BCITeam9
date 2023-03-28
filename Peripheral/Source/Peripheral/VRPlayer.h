@@ -36,7 +36,7 @@ public:
 	//Camera
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		UCameraComponent* mCamera;
-
+	void SetCameraMode(enum EPeripheralMode mode);
 	//FPS MOVEment
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 		float mMoveSpeed = 100.f;					  
@@ -74,7 +74,10 @@ public:
 	};
 	bool StartVR();
 	bool StopVR();
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USceneComponent* mVROrigin;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		USceneComponent* mCameraOrigin;
 	//Simple BCI mode mechanic
 	bool UsingBCI() {
 		return bUseBCI;

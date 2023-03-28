@@ -106,7 +106,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FProfile GetProfile(FString name);
 
-
+	UFUNCTION(BlueprintCallable)
+	void SetPeripheralModeFromInstance(EPeripheralMode mode) {
+		SetPeripheralMode(mode);
+	}
+	UFUNCTION(BlueprintCallable)
+	EPeripheralMode GetPeripheralModeFromInstance() {
+		return GetPeripheralMode();
+	}
 private:
 	
 	//Hands
@@ -116,7 +123,7 @@ private:
 	TMap<FString, APeripheralHandActor*> mHandsMap;
 	TArray<APeripheralHandActor*> mHandsArray;
 
-	FString mSelectedMapNameString = "";
+	FString mSelectedMapNameString = "M_Lobby";
 
 	TMap<FName, FPeripheralLevel> mLevels;
 

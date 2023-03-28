@@ -22,7 +22,10 @@ void ABall::BeginPlay()
 	if (grab) {
 		mGrab = grab;
 	}
-
+	auto mesh = Cast<UStaticMeshComponent>(GetComponentByClass(UStaticMeshComponent::StaticClass()));
+	if (mesh) {
+		mMesh = mesh;
+	}
 }
 
 // Called every frame
@@ -30,5 +33,16 @@ void ABall::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ABall::PickedUp()
+{
+	mMesh->SetSimulatePhysics(false);
+}
+
+void ABall::Dropped()
+{
+
+	mMesh->SetSimulatePhysics(true);
 }
 

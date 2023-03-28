@@ -47,6 +47,10 @@ bool UAnimalInteractionComponent::Interact(AActor* interactor)
 		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("Animal IC : Not Player")));
 		return false;
 	}
+	if (!mAnimal) {
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, FString::Printf(TEXT("Animal IC : No Animal")));
+		return false;
+	}
 	mAnimal->InteractWithPlayer(this, mReactionType);
 	return true;
 }

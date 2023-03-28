@@ -33,56 +33,79 @@ AVRPlayer::AVRPlayer()
 	//UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
 	
 	//Camera
-	mCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
-	mCamera->SetupAttachment(GetCapsuleComponent());
-	mCamera->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f)); // Position the camera
-	mCamera->bUsePawnControlRotation = true;
-
-	// Create VR Controllers.
-	mRightMC = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("R_MotionController"));
-	mRightMC->MotionSource = FXRMotionControllerBase::RightHandSourceId; //idk why this is done
-	mRightMC->SetupAttachment(RootComponent);
-
-	mLeftMC = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("L_MotionController"));
-	mLeftMC->SetupAttachment(RootComponent);
+	//mVROrigin = CreateDefaultSubobject<USceneComponent>(TEXT("VR_Origin_1"));
+	//mCameraOrigin = CreateDefaultSubobject<USceneComponent>(TEXT("Camera Origin"));
+	//mVROrigin->SetupAttachment(GetCapsuleComponent());
+	//mCameraOrigin->SetupAttachment(GetCapsuleComponent());
+	////
+	//mCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	//mCamera->SetupAttachment(mVROrigin);
+	////	
+	//// Create VR Controllers.
+	//mRightMC = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("Right_MotionController"));
+	//mRightMC->MotionSource = FXRMotionControllerBase::RightHandSourceId; //idk why this is done
+	//mRightMC->SetupAttachment(mVROrigin);
+	//
+	//mLeftMC = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("Left_MotionController"));
+	//mLeftMC->SetupAttachment(mVROrigin);
 
 	//TODO : THIS MAY NOT BE USED; THIS IS TEMPORARY
-	mRightHandChildActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("Right Hand Child Actor"));
-	mLeftHandChildActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("Left Hand Child Actor"));
-	//Set what class they are
-	//TODO : If this is to be used, set this as the instantiation of the mRightHand and mLeftHand
-	mRightHandChildActor->SetChildActorClass(APeripheralHandActor::StaticClass());
-	mLeftHandChildActor->SetChildActorClass(APeripheralHandActor::StaticClass());
+	//mRightHandChildActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("Right Hand Child Actor"));
+	//mLeftHandChildActor = CreateDefaultSubobject<UChildActorComponent>(TEXT("Left Hand Child Actor"));
+	////Set what class they are
+	////TODO : If this is to be used, set this as the instantiation of the mRightHand and mLeftHand
+	//mRightHandChildActor->SetChildActorClass(APeripheralHandActor::StaticClass());
+	//mLeftHandChildActor->SetChildActorClass(APeripheralHandActor::StaticClass());
 
-	//Spawn hands
-	mRightHand = CreateDefaultSubobject<APeripheralHandActor>(TEXT("Right Hand"));
-	mLeftHand  = CreateDefaultSubobject<APeripheralHandActor>(TEXT("Left Hand"));
-	
-	
-
-	mRightHandChildActor->CreateChildActor();
-
-	mRightHandChildActor->CreateChildActor();
+	////Spawn hands
+	//mRightHand = CreateDefaultSubobject<APeripheralHandActor>(TEXT("Right Hand"));
+	//mLeftHand  = CreateDefaultSubobject<APeripheralHandActor>(TEXT("Left Hand"));
+	//
+	//
+	//
+	//mRightHandChildActor->CreateChildActor();
+	//
+	//mRightHandChildActor->CreateChildActor();
 
 	//mHandsMap[right] = mRightHand;
 	//mHandsMap[left] = mLeftHand;
 
-	mHandsArray.Add(mRightHand);
-	mHandsArray.Add(mLeftHand);
-
-	mHandsVector.push_back(mRightHand);
-	mHandsVector.push_back(mLeftHand);
+	//mHandsArray.Add(mRightHand);
+	//mHandsArray.Add(mLeftHand);
+	//
+	//mHandsVector.push_back(mRightHand);
+	//mHandsVector.push_back(mLeftHand);
 
 	//Teleportation
 	mTeleportGraphic = CreateDefaultSubobject<USceneComponent>(TEXT("TeleportGraphic"));
 	mTeleportAimStart = CreateDefaultSubobject<USceneComponent>(TEXT("TeleportAimStart"));
-	mTeleportAimStart->SetupAttachment(mRightMC);
+
 }
 
 // Called when the game starts or when spawned
 void AVRPlayer::BeginPlay()
 {
 	Super::BeginPlay();
+	//Find motion controllers if they are not spawned form here
+	if (!mRightMC && !mLeftMC) {
+		auto mcs = GetComponentsByClass(UMotionControllerComponent::StaticClass());
+		for (auto mc : mcs) {
+			if (mc->GetName() == "RightMC") {
+				mRightMC = Cast<UMotionControllerComponent>(mc);
+			}
+			if (mc->GetName() == "LeftMC") {
+				mLeftMC = Cast<UMotionControllerComponent>(mc);
+			}
+
+		}
+	}
+	if (!mCamera) {
+		auto cams = GetComponentByClass(UCameraComponent::StaticClass());
+		if (cams) {
+			mCamera = Cast<UCameraComponent>(cams);
+		}
+	}
+	
 
 	mPeripheralGI = Cast<UPeripheralGameInstance>(GetGameInstance());
 	if (!mPeripheralGI) {
@@ -92,7 +115,9 @@ void AVRPlayer::BeginPlay()
 	auto mode = GetPeripheralMode();
 	if (mode == NORMAL) {
 		//We're using neither VR nor BCI, then we want to play as a regular fps game ? 
-
+		bVR = false;
+		mRightMC->SetHiddenInGame(true);
+		mLeftMC->SetHiddenInGame(true);
 	}
 	if (mode == VR_BCI) {
 		//Here we want normal VR with BCI hand override enabled
@@ -100,6 +125,7 @@ void AVRPlayer::BeginPlay()
 	}
 	if (mode == VR) {
 		//Normal VR without any overrides, 
+		bVR = true;
 	}
 	if (mode == BCI) {
 		//Here we want normal FPS controls, no VR, with a hand that can be overriden
@@ -107,13 +133,10 @@ void AVRPlayer::BeginPlay()
 	}
 
 
-	//Set these hands as the ones being used by the game isntance.
-	mPeripheralGI->SetHandByName("Right", mRightHand);
-	mPeripheralGI->SetHandByName("Left", mLeftHand);
+	SetCameraMode(mode);
 
 	//What do we want to do different here
-	Teleport_Released();
-
+	mTeleportGraphic->SetHiddenInGame(true);
 
 	auto comps = GetComponents();
 
@@ -136,9 +159,11 @@ void AVRPlayer::Tick(float DeltaTime)
 	//If we're using VR, we want our hands to be aligned with the motion controllers
 	if (bVR) {
 		//This should probably be changed to a better function
-		AlignHandAndMotionController(left);
-		AlignHandAndMotionController(right);
+		//AlignHandAndMotionController(left);
+		//AlignHandAndMotionController(right);
 	}
+
+	
 
 	if (bTeleporting) {
 		auto hit = GetTeleportAimHit();
@@ -193,6 +218,21 @@ void AVRPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	// Bind jump events
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+}
+void AVRPlayer::SetCameraMode(EPeripheralMode mode)
+{
+	if (mode == VR || mode == VR_BCI) {
+		mCamera->bLockToHmd = true;
+		mCamera->bUsePawnControlRotation = false;
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Cyan, FString::Printf(TEXT("Player : Set Camera To VR")));
+	}
+	else {
+		mCamera->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f)); // Position the camera
+		mCamera->bLockToHmd = false;
+
+		mCamera->bUsePawnControlRotation = true;
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Cyan, FString::Printf(TEXT("Player : Set Camera To NORMAL")));
+	}
 }
 #pragma region FPS Controls
 void AVRPlayer::MoveForward(float value)
@@ -541,6 +581,64 @@ void AVRPlayer::Interact_Released(UMotionControllerComponent* mc)
 
 void AVRPlayer::Interact_Pressed()
 {
+	auto start = mCamera->GetComponentLocation();
+	auto end = mCamera->GetComponentLocation() + (mCamera->GetForwardVector() * mInteractionRange);
+
+	//Normal interact has been pressed, what do we do ? 
+	TArray<FHitResult> hits;
+	FHitResult hit;
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+	GetWorld()->LineTraceSingleByChannel(hit,  start, end, ECC_Visibility, QueryParams);
+
+	//Vector to store itneractables found
+	std::vector<IInteractable*> interactables;
+
+	if (IsValid(hit.GetActor())) {
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Cyan, FString::Printf(TEXT("Player : Hit %s"), *hit.GetActor()->GetName()));
+
+		//check if we get a interactable component from here
+		auto inter = Cast<IInteractable>(hit.GetActor());
+		if (inter) {
+			inter->Interact(this);
+			return;
+
+			interactables.push_back(inter);
+		}
+
+		auto comps = hit.GetActor()->GetComponentsByInterface(UInteractable::StaticClass());
+		for (auto comp : comps) {
+			auto interactableComp = Cast<IInteractable>(comp);
+			if (interactableComp) {
+				interactables.push_back(interactableComp);
+			}
+			
+		}
+	}
+	float amount = interactables.size();
+	//Debug amount of itneratables
+	GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Cyan, FString::Printf(TEXT("Player : Hit %f interactables"), amount));
+
+	//there are no 
+	if (interactables.size() == 0) {
+		return;
+	}
+	IInteractable* interactable = interactables[0];
+
+	float maxDistance = FVector::Distance(hit.Location, interactable->GetInteractableLocation());;
+	//Take the closest to where the hit landed
+	for (auto inter : interactables) {
+		auto distance = FVector::Distance(hit.Location, inter->GetInteractableLocation());
+		if (distance < maxDistance) {
+			maxDistance = distance;
+			interactable = inter;
+		}
+	}
+
+	//Intertact with it
+	interactable->Interact(this);
+	
 }
 
 void AVRPlayer::Interact_Released()

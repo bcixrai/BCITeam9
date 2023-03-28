@@ -83,7 +83,14 @@ public:
 
 	//Ball
 	void Ball(float DeltaTime);
-	AActor* mBall = nullptr;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<AActor> mBallBP;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UStaticMeshComponent* mBallMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FVector mBallSpawnOffset;
+	AActor* mBall;
+	UFUNCTION(BlueprintCallable)
 	bool NoticeBall(AActor* ball);
 	void PickupBall();
 	void DropBall();

@@ -84,6 +84,8 @@ bool UHandleComponent::TryGrab(UMotionControllerComponent* mc)
 	// do we normalize it ? 
 	offset.Normalize();
 	//We now have a vector from the origin of the handle out toward
+
+
 	return true;
 }
 
@@ -99,4 +101,12 @@ bool UHandleComponent::TryRelease()
 
 	return true;
 
+}
+
+void UHandleComponent::Turn()
+{
+	auto rot = GetComponentRotation();
+	rot.Roll += GetWorld()->GetDeltaSeconds() * mTurnSpeed;
+
+	SetWorldRotation(rot);
 }

@@ -2,7 +2,8 @@
 
 
 #include "BallGrabComponent.h"
-
+#include "Kismet/GameplayStatics.h"
+#include "Animal.h"
 void UBallGrabComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	if (bCheckForThrow) {
@@ -15,9 +16,17 @@ void UBallGrabComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 			float speed = (dist / 100.f)/ mCurrentTime;
 
 			GEngine->AddOnScreenDebugMessage(113, 10, FColor::Cyan, FString::Printf(TEXT("Ball : %f meters per second"), mCheckForThrowTime, speed));
-			if (speed > mRequiredMetersPerSecond) {
+			bool sufficient = speed > mRequiredMetersPerSecond;
+			if (sufficient) {
 				GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Green, FString::Printf(TEXT("Ball : Registered throw at %f meters per second over %f seconds"), speed, mCheckForThrowTime));
-
+				TArray<AActor*> actors;
+				UGameplayStatics::GetAllActorsOfClass(GetWorld(), AAnimal::StaticClass(), actors);
+				for (auto actor : actors) {
+					auto animal = Cast<AAnimal>(actor);
+					if (animal) {
+						animal->NoticeBall(GetOwner());
+					}
+				}
 			}
 			else {
 				GEngine->AddOnScreenDebugMessage(-1, 10, FColor::Red, FString::Printf(TEXT("Ball : No throw at %f meters per second over %f seconds"), speed, mCheckForThrowTime));
